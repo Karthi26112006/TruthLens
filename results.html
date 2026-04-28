@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Add specific micro-animations and rich aesthetics for results */
+    .fade-in-up {
+        animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    .delay-1 { animation-delay: 0.2s; }
+    .delay-2 { animation-delay: 0.4s; }
+    .delay-3 { animation-delay: 0.6s; }
+
+    @keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .report-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+    
+    .report-header h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(90deg, #f8fafc, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.05em;
+    }
+
+    .media-card {
+        background: rgba(10, 14, 23, 0.6);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 10px 40px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .media-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 4px;
+        background: var(--status-color, var(--cyan-glow));
+        box-shadow: 0 0 15px var(--status-color, var(--cyan-glow));
+    }
+
+    .media-label {
+        color: #cbd5e1;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    #mediaContainer {
+        width: 100%;
+        max-height: 350px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    /* Score Circle Enhancements */
+    .score-circle-wrapper {
+        position: relative;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .score-circle {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--status-color, var(--text-main));
+        border: 6px solid var(--status-color, var(--border-color));
+        box-shadow: 0 0 35px var(--status-color-glow, rgba(0,0,0,0.5)), inset 0 0 20px var(--status-color-glow, transparent);
+        background: rgba(0,0,0,0.3);
+        text-shadow: 0 0 20px var(--status-color-glow, transparent);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .score-circle span.percent-sign {
+        font-size: 1.5rem;
+        opacity: 0.8;
+    }
+
+    .pulse {
+        animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    
+    @keyframes pulse-ring {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 var(--status-color-glow); }
+        70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(0,0,0,0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+    }
+
+    .verdict-box {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    #verdictLabel {
+        font-size: 3.5rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin: 0;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        color: var(--status-color, var(--text-main));
+        text-shadow: 0 0 30px var(--status-color-glow, transparent);
+    }
+
+    /* Anomalies list */
+    .anomalies-card {
+        background: linear-gradient(145deg, rgba(16,24,39,0.8) 0%, rgba(10,14,23,0.9) 100%);
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.05);
+        border-left: 4px solid var(--status-color, var(--cyan-glow));
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .anomalies-card h4 {
+        color: #f8fafc;
+        font-size: 1.2rem;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .anomalies-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .anomalies-list li {
+        margin-bottom: 0.8rem;
+        padding: 0.8rem 1rem;
+        background: rgba(0,0,0,0.4);
+        border-radius: 8px;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        border: 1px solid rgba(255,255,255,0.03);
+        transition: transform 0.2s ease;
+    }
+    
+    .anomalies-list li:hover {
+        transform: translateX(5px);
+        background: rgba(255,255,255,0.05);
+    }
+
+    .anomalies-list li svg {
+        flex-shrink: 0;
+        margin-top: 0.2rem;
+    }
+
+</style>
+
+<div style="max-width: 1000px; margin: 0 auto;">
+    
+    <div class="glass-panel" id="reportCard" style="display: none; box-shadow: 0 20px 50px rgba(0,0,0,0.6); padding: 3rem;">
+        
+        <div class="report-header fade-in-up">
+            <h2>TruthLens Analysis Report</h2>
+            <div style="width: 60px; height: 4px; background: var(--status-color, var(--cyan-glow)); margin: 1rem auto; border-radius: 2px;"></div>
+        </div>
+
+        <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 3rem; margin-bottom: 2rem;">
+            <!-- Left Side: Display the Media -->
+            <div class="media-card fade-in-up delay-1" style="flex: 1; min-width: 300px;">
+                <div class="media-label">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Analyzed Media
+                </div>
+                <div id="mediaContainer">
+                    <!-- Media will be injected here -->
+                </div>
+            </div>
+
+            <!-- Right Side: Scores and Diagnostics -->
+            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; justify-content: center;" class="fade-in-up delay-2">
+                
+                <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 2rem;">
+                    
+                    <div style="text-align: center;">
+                        <p style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.15em; margin-bottom: 1rem; font-weight: 600;">Authenticity Score</p>
+                        <div class="score-circle-wrapper">
+                            <div class="score-circle pulse" id="scoreCircle">
+                                <div><span id="scoreValue">0</span><span class="percent-sign">%</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="verdict-box">
+                        <p style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.15em; margin-bottom: 0.5rem; font-weight: 600;">Classification Output</p>
+                        <h3 id="verdictLabel"></h3>
+                    </div>
+
+                </div>
+
+                <div class="anomalies-card fade-in-up delay-3">
+                    <h4>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        Diagnostic Breakdown
+                    </h4>
+                    <ul id="anomaliesList" class="anomalies-list">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 3.5rem;" class="fade-in-up delay-3">
+            <a href="{{ url_for('index') }}" class="btn btn-cyan" style="padding: 1rem 3rem; font-size: 1.1rem; border-radius: 50px;">Analyze Another File</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const resultString = sessionStorage.getItem('truthlens_result_{{ filename }}');
+        
+        if (!resultString) {
+            alert('No recent analysis found. Redirecting...');
+            window.location.href = '/';
+            return;
+        }
+        
+        const data = JSON.parse(resultString);
+        const reportCard = document.getElementById('reportCard');
+        reportCard.style.display = 'block';
+
+        // Compute glow color based on status
+        let glowColor = '';
+        if(data.status === 'REAL') {
+            glowColor = 'rgba(16, 185, 129, 0.4)'; // success green glow
+            document.documentElement.style.setProperty('--status-color', 'var(--success-color)');
+        } else if(data.status === 'EDITED') {
+            glowColor = 'rgba(245, 158, 11, 0.4)'; // warning orange glow
+            document.documentElement.style.setProperty('--status-color', 'var(--warning-color)');
+        } else {
+            glowColor = 'rgba(239, 68, 68, 0.4)'; // danger red glow
+            document.documentElement.style.setProperty('--status-color', 'var(--danger-color)');
+        }
+        document.documentElement.style.setProperty('--status-color-glow', glowColor);
+        
+        // Setup Media Container
+        const mediaContainer = document.getElementById('mediaContainer');
+        const fileUrl = "{{ url_for('static', filename='uploads/' + filename) }}";
+        
+        if (data.type === "Image") {
+            mediaContainer.innerHTML = `<img src="${fileUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain; animation: zoomIn 0.8s ease;" alt="Uploaded Image">`;
+        } else if (data.type === "Video") {
+            mediaContainer.innerHTML = `<video src="${fileUrl}" controls style="max-width: 100%; max-height: 100%; width: 100%;"></video>`;
+        } else if (data.type === "Audio") {
+            mediaContainer.innerHTML = `<div style="text-align: center; padding: 3rem;"><svg style="width:72px;height:72px;stroke:var(--status-color);margin-bottom:1.5rem; filter: drop-shadow(0 0 10px var(--status-color-glow));" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg><br><audio src="${fileUrl}" controls style="background: #f1f3f4; border-radius: 30px;"></audio></div>`;
+        }
+        
+        // Verdict
+        const verdictLabel = document.getElementById('verdictLabel');
+        verdictLabel.textContent = data.status;
+        
+        // Animate Score Counter
+        const scoreValueSpan = document.getElementById('scoreValue');
+        const targetScore = parseInt(data.score, 10);
+        let currentScore = 0;
+        
+        const duration = 1500; // ms
+        const interval = 20;
+        const step = targetScore / (duration / interval);
+        
+        const counter = setInterval(() => {
+            currentScore += step;
+            if(currentScore >= targetScore) {
+                currentScore = targetScore;
+                clearInterval(counter);
+            }
+            scoreValueSpan.textContent = Math.floor(currentScore);
+        }, interval);
+
+        // Setup Anomalies List
+        const list = document.getElementById('anomaliesList');
+        
+        const successIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success-color)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        const warningIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warning-color)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+        const dangerIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger-color)" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+
+        if (data.anomalies.length === 0) {
+            const li = document.createElement('li');
+            li.innerHTML = `${successIcon} <span style="color: #e2e8f0;">No deepfake or editing signatures identified. Media properties match unmanipulated mathematical baselines.</span>`;
+            li.style.borderLeft = "3px solid var(--success-color)";
+            list.appendChild(li);
+        } else {
+            data.anomalies.forEach((anomaly, index) => {
+                const li = document.createElement('li');
+                const lowerAnomaly = anomaly.toLowerCase();
+                let icon = warningIcon;
+                let colorClass = "color: #e2e8f0;";
+                let borderLeft = "3px solid var(--warning-color)";
+
+                if (lowerAnomaly.includes("ai") || lowerAnomaly.includes("generator") || lowerAnomaly.includes("synthesiz") || lowerAnomaly.includes("deepfake") || lowerAnomaly.includes("gan") || lowerAnomaly.includes("fake")) {
+                    icon = dangerIcon;
+                    colorClass = "color: #fca5a5;";
+                    borderLeft = "3px solid var(--danger-color)";
+                } 
+
+                li.innerHTML = `${icon} <span style="${colorClass}">${anomaly}</span>`;
+                li.style.borderLeft = borderLeft;
+                li.style.animation = `fadeInUp 0.5s ease forwards ${(0.5 + index * 0.1)}s`;
+                li.style.opacity = "0";
+                li.style.transform = "translateY(10px)";
+                
+                list.appendChild(li);
+            });
+        }
+    });
+
+    // Add extra keyframes needed occasionally
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = `
+        @keyframes zoomIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(styleSheet);
+</script>
+{% endblock %}

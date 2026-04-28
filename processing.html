@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="text-align: center; max-width: 600px; margin: 4rem auto;">
+    <div class="glass-panel">
+        <div class="cyber-loader"></div>
+        <h2 style="margin-top: 3rem; color: var(--cyan-glow); letter-spacing: 0.1em;">SYSTEM ANALYZING</h2>
+        <p id="statusText" style="color: var(--text-muted); margin-top: 1rem; font-family: monospace;">Fetching neural weights...</p>
+    </div>
+</div>
+
+<script>
+    const statuses = [
+        "Isolating pixel clusters...",
+        "Scanning metadata signatures...",
+        "Performing FFT spectrum analysis...",
+        "Evaluating temporal frame consistency...",
+        "Cross-referencing manipulation heuristics...",
+        "Compiling authenticity tensor..."
+    ];
+    
+    let statusIndex = 0;
+    const statusEl = document.getElementById('statusText');
+    
+    setInterval(() => {
+        if (statusIndex < statuses.length) {
+            statusEl.textContent = statuses[statusIndex];
+            statusIndex++;
+        }
+    }, 800);
+
+    // Call the actual API behind the scenes
+    fetch('{{ url_for("api_analyze", filename=filename) }}')
+        .then(response => response.json())
+        .then(data => {
+            // Save the data to sessionStorage so results page can read it quickly
+            sessionStorage.setItem('truthlens_result_{{ filename }}', JSON.stringify(data));
+            window.location.href = '{{ url_for("results", filename=filename) }}';
+        })
+        .catch(err => {
+            alert('Analysis failed. Matrix failure.');
+            window.location.href = '/';
+        });
+</script>
+{% endblock %}
