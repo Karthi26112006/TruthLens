@@ -12,3 +12,29 @@ I can suggest how to structure your Installation and Usage sections using clear 
 
 # Project Context: 
 If you're preparing this for a specific presentation or repository, I can help tailor the "Future Scope" section to impress the reviewers.
+
+## Project Structure
+
+```text
+TruthLens/
+├── app.py                # Main Flask application & AI model integration
+├── forensics.py          # Core forensic analysis (EXIF, OpenCV, FFT)
+├── LICENSE               # MIT License file
+├── README.md             # Project documentation
+├── requirements.txt      # List of dependencies
+│
+├── static/               # Static assets
+│   ├── css/
+│   │   └── styles.css    # Cyber-themed UI styling
+│   ├── img/              # Backgrounds and icons
+│   └── uploads/          # Temporary storage for analyzed media
+│
+├── templates/            # Flask HTML templates
+│   ├── base.html         # Main layout wrapper
+│   ├── index.html        # Upload landing page
+│   ├── processing.html   # Neural network analysis animation
+│   └── results.html      # Forensic report dashboard
+│
+└── tests/                # Verification scripts
+    ├── test_dima806.py   # Testing the primary AI classifier
+    └── test_model.py     # Testing fallback detection models
